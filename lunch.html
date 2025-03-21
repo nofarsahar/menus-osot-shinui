@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ארוחת צהריים</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .badge {
+            background-color: #2ebac5;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 12px;
+            margin-left: 10px;
+        }
+        .cursor-pointer { cursor: pointer; }
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: url('background.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.6); /* ניתן לשנות את השקיפות */
+            z-index: -1;
+        }
+        header {
+            background: #814eca;
+            color: white;
+            padding: 20px;
+            font-size: 26px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .meal-list {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .list-group-item.cursor-pointer.border-0.bg-transparent {
+            font-size: 20px;
+            text-align: right;
+        }
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            text-decoration: none;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="back-link">⬅</a>
+        <h1>ארוחת צהריים</h1>
+    </header>
+    <main>
+        <div class="container mt-3" style="max-width: 828px;">
+            <input type="text" id="search" class="form-control text-end" placeholder="חפש מתכון">
+        </div>
+        <section class="meal-list">
+            <h2 class="text-primary text-center">חלבון</h2>
+            <ul class="list-group text-center">
+                <li class="list-group-item cursor-pointer" onclick="window.location.href='recipe.html?meal=chicken_fillets'"><span class='badge'>בשרי / טבעוני</span> פילה עוף / רצועות טופו / סייטן בירקות אסייתי</li>
+                <li class="list-group-item cursor-pointer" onclick="window.location.href='recipe.html?meal=balsamic_chicken_tofu'"><span class='badge'>בשרי / טבעוני</span> עוף / טופו ברוטב בלסמי סויה ורוזמרין</li>
+                <li class="list-group-item cursor-pointer" onclick="window.location.href='recipe.html?meal=crust_techina'"><span class='badge'>דג / טבעוני</span> קראסט טחינה לדג או טופו</li>
+            </ul>
+        </section>
+        <section class="meal-list">
+            <h2 class="text-success text-center">פחמימה</h2>
+            <ul class="list-group text-center">
+                <li class="list-group-item cursor-pointer" onclick="window.location.href='recipe.html?meal=cauliflower_puree'">פירה כרובית</li>
+                <li class="list-group-item cursor-pointer" onclick="window.location.href='recipe.html?meal=couscous_love'">קוסקוס ושעועית צהובה</li>
+                <li class="list-group-item cursor-pointer" onclick="window.location.href='recipe.html?meal=lentil_rice'">תבשיל אורז, עדשים ופטריות</li>
+            </ul>
+        </section>
+        <section class="meal-list">
+            <h2 class="text-warning text-center">שומן</h2>
+            <ul class="list-group text-center">
+                <li class="list-group-item">שמן זית / טחינה גולמית</li>
+                <li class="list-group-item">אבוקדו</li>
+                <li class="list-group-item">אגוזים / שקדים טבעיים</li>
+            </ul>
+        </section>
+    </main>
+<script>
+    document.getElementById('search').addEventListener('input', function() {
+        let filter = this.value.toLowerCase();
+        let items = document.querySelectorAll('.list-group-item');
+        items.forEach(item => {
+            let text = item.innerText.toLowerCase();
+            item.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+    let list = document.querySelector(".list-group");
+    let items = Array.from(list.children);
+
+    items.sort((a, b) => {
+        // יוצרים עותק זמני בלי תגיות כדי לבצע מיון
+        const getTextWithoutBadge = el => {
+            let clone = el.cloneNode(true);
+            // מסיר את ה-span עם class 'badge'
+            let badge = clone.querySelector(".badge");
+            if (badge) badge.remove();
+            return clone.textContent.trim();
+        };
+
+        let nameA = getTextWithoutBadge(a);
+        let nameB = getTextWithoutBadge(b);
+        return nameA.localeCompare(nameB, 'he');
+    });
+
+    // מחזיר את הפריטים המסודרים לרשימה
+    items.forEach(item => list.appendChild(item));
+});
+</script>
+</body>
+</html>
