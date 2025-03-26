@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const jsonFiles = [
     "data/recipes_feb_2021_week_1.json",
     "data/recipes_mar_2025_week_3.json",
+    "data/recipes_mar_2025_week_4.json",
   ];
 
   async function loadRecipes() {
