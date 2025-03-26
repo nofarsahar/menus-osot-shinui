@@ -95,7 +95,7 @@
   </head>
   <body>
     <header>
-      <a href="recipes.html" class="back-link">⬅</a>
+      <a id="back-link" class="back-link">⬅</a>
       <h1 id="recipe-title">שם המתכון</h1>
     </header>
 
@@ -131,6 +131,7 @@
         const jsonFiles = [
           "data/recipes_feb_2021_week_1.json",
           "data/recipes_mar_2025_week_3.json",
+          "data/recipes_mar_2025_week_4.json",
         ];
 
         let allRecipes = [];
@@ -161,23 +162,26 @@
           return;
         }
 
+        // הצגת שם המתכון
         document.getElementById("recipe-title").innerText = recipe.title;
 
-        if (recipe.description) {
-          const descElement = document.getElementById("recipe-description");
-          descElement.innerText = recipe.description;
-          descElement.style.display = "block";
-        }
+        // הצגת תאריך המתכון
+        const dateElement = document.getElementById("recipe-date");
+        dateElement.innerText = `${recipe.date}`;
 
+        // הצגת הרכיבים
         const ingredientsList = document.getElementById("recipe-ingredients");
+        ingredientsList.innerHTML = ""; // מניעת כפילות
         recipe.ingredients.forEach((ingredient) => {
           const li = document.createElement("li");
           li.innerText = ingredient;
           ingredientsList.appendChild(li);
         });
 
+        // הצגת אופן ההכנה
         const instructionsList = document.getElementById("recipe-instructions");
-        recipe.instructions.forEach((step, index) => {
+        instructionsList.innerHTML = ""; // מניעת כפילות
+        recipe.instructions.forEach((step) => {
           const li = document.createElement("li");
           li.innerText = step;
           instructionsList.appendChild(li);

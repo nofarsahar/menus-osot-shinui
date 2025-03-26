@@ -65,9 +65,9 @@
         font-size: 16px;
         text-align: right;
         background: white;
-        padding: 15px;
+        padding: 10px;
         border-radius: 10px;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
         cursor: pointer;
         transition: background 0.3s ease;
       }
@@ -77,30 +77,84 @@
       }
 
       .category-title {
-        font-size: 22px;
+        font-size: 20px;
         font-weight: bold;
         margin-top: 20px;
         padding-bottom: 5px;
         border-bottom: 2px solid #814eca;
       }
-      /*search text "חפש מתכון" need to be in the right side*/
+
+      .search-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        max-width: 400px;
+        margin: auto;
+        padding: 5px;
+      }
+
       #search {
-        border: 2px solid #814eca; /* מסגרת סגולה */
-        background-color: #f8f9ff; /* רקע עדין */
-        border-radius: 8px; /* פינות מעוגלות יותר */
-        padding: 12px; /* ריווח פנימי */
+        flex: 1;
+        border: 2px solid #814eca;
+        background-color: #f8f9ff;
+        border-radius: 8px;
+        padding: 10px;
         font-size: 16px;
         text-align: right;
         direction: rtl;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* הוספת צל קל */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        height: 40px;
       }
 
-      /* כשמתמקדים בשדה החיפוש */
       #search:focus {
         outline: none;
-        border-color: #6a3ea0; /* צבע כהה יותר להתמקדות */
+        border-color: #6a3ea0;
         background-color: white;
         box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .filter-icon {
+        width: 35px;
+        height: 35px;
+        cursor: pointer;
+      }
+
+      /* פופ-אפ */
+      #popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        z-index: 999;
+      }
+
+      #popup-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        max-width: 500px;
+        background: white;
+        border: 2px solid #814eca;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        padding: 20px;
+        display: none;
+        z-index: 1000;
+      }
+
+      /* אייקון סגירה */
+      .close-popup {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        font-size: 24px;
+        color: #814eca;
+        cursor: pointer;
       }
     </style>
   </head>
@@ -111,24 +165,23 @@
     </header>
 
     <main class="container">
-      <div class="container mt-3">
+      <div class="search-container">
         <input
           type="text"
           id="search"
           class="form-control"
-          placeholder="חפש מתכון"
+          placeholder="חיפוש מתכון..."
+        />
+        <img
+          id="filter-icon"
+          src="filter-icon.png"
+          alt="סנן"
+          class="filter-icon"
         />
       </div>
+
       <section class="meal-list mt-3">
-        <div id="general-section">
-          <ul class="list-group text-center" id="recipe-list"></ul>
-        </div>
-        <div id="lunch-sections" style="display: none">
-          <h2 class="category-title">חלבון</h2>
-          <ul class="list-group text-center" id="protein-list"></ul>
-          <h2 class="category-title" style="margin-top: 20px">פחמימה</h2>
-          <ul class="list-group text-center" id="carbs-list"></ul>
-        </div>
+        <ul class="list-group text-center" id="recipe-list"></ul>
       </section>
     </main>
 
@@ -157,77 +210,65 @@
         };
         categoryTitle.innerText = categoryTitles[category] || "רשימת מתכונים";
 
+        document.querySelector(
+          ".back-link"
+        ).href = `index.html?category=${category}`;
+
+        const recipes = await fetchRecipes();
+        displayRecipes(
+          recipes.filter((r) => !category || r.category === category)
+        );
+
+        document
+          .getElementById("filter-icon")
+          .addEventListener("click", function () {
+            document.getElementById("popup-overlay").style.display = "block";
+            document.getElementById("popup-container").style.display = "block";
+          });
+
+        document
+          .getElementById("filter-search")
+          .addEventListener("input", function () {
+            let filter = this.value.toLowerCase();
+            document
+              .querySelectorAll("#date-filters label")
+              .forEach((label) => {
+                label.style.display = label.innerText.includes(filter)
+                  ? ""
+                  : "none";
+              });
+          });
+
+        function closePopup() {
+          document.getElementById("popup-overlay").style.display = "none";
+          document.getElementById("popup-container").style.display = "none";
+        }
+
+        window.closePopup = closePopup;
+      });
+
+      async function fetchRecipes() {
         const jsonFiles = [
           "data/recipes_feb_2021_week_1.json",
           "data/recipes_mar_2025_week_3.json",
+          "data/recipes_mar_2025_week_4.json",
         ];
-
         let allRecipes = [];
-
         for (let file of jsonFiles) {
-          try {
-            const response = await fetch(file);
-            if (!response.ok) throw new Error(`Error loading file: ${file}`);
-            const data = await response.json();
-            allRecipes = allRecipes.concat(data.recipes);
-          } catch (error) {
-            console.error(`Error loading ${file}:`, error);
-          }
+          let response = await fetch(file);
+          if (!response.ok) continue;
+          let data = await response.json();
+          allRecipes = allRecipes.concat(data.recipes || []);
         }
+        return allRecipes;
+      }
 
-        console.log("All recipes before filtering:", allRecipes);
-
-        const filteredRecipes = allRecipes.filter((recipe) => {
-          return (
-            recipe.category &&
-            recipe.category.toLowerCase() === category.toLowerCase()
-          );
-        });
-
-        // Sort alphabetically
-        filteredRecipes.sort((a, b) => a.title.localeCompare(b.title, "he"));
-
-        // Handle lunch category separately
-        if (category === "lunch") {
-          lunchSections.style.display = "block"; // Show protein & carbs sections
-          generalSection.style.display = "none"; // Hide the general section
-          filteredRecipes.forEach((recipe) => {
-            const li = document.createElement("li");
-            li.className = "list-group-item cursor-pointer";
-            li.innerText = recipe.title;
-            li.onclick = () =>
-              (window.location.href = `recipe.html?meal=${recipe.id}`);
-
-            if (recipe.subcategory === "protein") {
-              proteinList.appendChild(li);
-            } else if (recipe.subcategory === "carbs") {
-              carbsList.appendChild(li);
-            }
-          });
-        } else {
-          // Regular categories (breakfast, snacks)
-          filteredRecipes.forEach((recipe) => {
-            const li = document.createElement("li");
-            li.className = "list-group-item cursor-pointer";
-            li.innerText = recipe.title;
-            li.onclick = () =>
-              (window.location.href = `recipe.html?meal=${recipe.id}`);
-            listContainer.appendChild(li);
-          });
-        }
-
-        // Search functionality
-        document
-          .getElementById("search")
-          .addEventListener("input", function () {
-            let filter = this.value.toLowerCase();
-            let items = document.querySelectorAll(".list-group-item");
-            items.forEach((item) => {
-              let text = item.innerText.toLowerCase();
-              item.style.display = text.includes(filter) ? "" : "none";
-            });
-          });
-      });
+      function displayRecipes(recipes) {
+        const list = document.getElementById("recipe-list");
+        list.innerHTML = recipes
+          .map((r) => `<li class="list-group-item">${r.title}</li>`)
+          .join("");
+      }
     </script>
   </body>
 </html>
