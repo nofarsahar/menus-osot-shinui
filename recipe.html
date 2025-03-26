@@ -247,6 +247,7 @@
 
         // הצגת הרכיבים
         const ingredientsList = document.getElementById("recipe-ingredients");
+        ingredientsList.innerHTML = ""; // מניעת כפילות
         recipe.ingredients.forEach((ingredient) => {
           const li = document.createElement("li");
           li.innerText = ingredient;
@@ -255,7 +256,8 @@
 
         // הצגת אופן ההכנה
         const instructionsList = document.getElementById("recipe-instructions");
-        recipe.instructions.forEach((step, index) => {
+        instructionsList.innerHTML = ""; // מניעת כפילות
+        recipe.instructions.forEach((step) => {
           const li = document.createElement("li");
           li.innerText = step;
           instructionsList.appendChild(li);
