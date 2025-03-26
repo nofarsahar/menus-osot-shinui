@@ -176,7 +176,7 @@
     {
       "id": "chickpea_pancakes",
       "title": "עיג'ה (לביבות ירק עיראקיות)",
-      "category": "snack",
+      "category": "snacks",
       "ingredients": [
         "1 כוס קמח חומוס",
         "1/2 כוס מים",
@@ -324,7 +324,7 @@
     {
       "id": "corn_muffins",
       "title": "מאפינס תירס",
-      "category": "snack",
+      "category": "snacks",
       "ingredients": [
         "כ-280 גר' תירס קל (תירס לייט, ללא סוכר ברשימת הרכיבים)",
         "גביע יוגורט ביו טבעי",
@@ -348,7 +348,7 @@
     {
       "id": "vegan_corn_patties",
       "title": "לביבות תירס טבעוניות",
-      "category": "snack",
+      "category": "snacks",
       "ingredients": [
         "כוס גרגירי תירס קל (תירס לייט, ללא סוכר ברשימת הרכיבים)",
         "חצי כוס קמח כוסמין מלא",
