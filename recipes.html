@@ -255,20 +255,69 @@
         ];
         let allRecipes = [];
         for (let file of jsonFiles) {
-          let response = await fetch(file);
-          if (!response.ok) continue;
-          let data = await response.json();
-          allRecipes = allRecipes.concat(data.recipes || []);
+          try {
+            const response = await fetch(file);
+            if (!response.ok) throw new Error(`Error loading file: ${file}`);
+            const data = await response.json();
+            allRecipes = allRecipes.concat(data.recipes);
+          } catch (error) {
+            console.error(`Error loading ${file}:`, error);
+          }
         }
-        return allRecipes;
-      }
 
-      function displayRecipes(recipes) {
-        const list = document.getElementById("recipe-list");
-        list.innerHTML = recipes
-          .map((r) => `<li class="list-group-item">${r.title}</li>`)
-          .join("");
-      }
+        console.log("All recipes before filtering:", allRecipes);
+
+        const filteredRecipes = allRecipes.filter((recipe) => {
+          return (
+            recipe.category &&
+            recipe.category.toLowerCase() === category.toLowerCase()
+          );
+        });
+
+        // Sort alphabetically
+        filteredRecipes.sort((a, b) => a.title.localeCompare(b.title, "he"));
+
+        // Handle lunch category separately
+        if (category === "lunch") {
+          lunchSections.style.display = "block"; // Show protein & carbs sections
+          generalSection.style.display = "none"; // Hide the general section
+          filteredRecipes.forEach((recipe) => {
+            const li = document.createElement("li");
+            li.className = "list-group-item cursor-pointer";
+            li.innerText = recipe.title;
+            li.onclick = () =>
+              (window.location.href = `recipe.html?id=${recipe.id}`);
+
+            if (recipe.subcategory === "protein") {
+              proteinList.appendChild(li);
+            } else if (recipe.subcategory === "carbs") {
+              carbsList.appendChild(li);
+            }
+          });
+        } else {
+          // Regular categories (breakfast, snacks)
+          filteredRecipes.forEach((recipe) => {
+            const li = document.createElement("li");
+            li.className = "list-group-item cursor-pointer";
+            li.innerText = recipe.title;
+            li.onclick = () =>
+              (window.location.href = `recipe.html?id=${recipe.id}`);
+            listContainer.appendChild(li);
+          });
+        }
+
+        // Search functionality
+        document
+          .getElementById("search")
+          .addEventListener("input", function () {
+            let filter = this.value.toLowerCase();
+            let items = document.querySelectorAll(".list-group-item");
+            items.forEach((item) => {
+              let text = item.innerText.toLowerCase();
+              item.style.display = text.includes(filter) ? "" : "none";
+            });
+          });
+      });
     </script>
   </body>
 </html>
