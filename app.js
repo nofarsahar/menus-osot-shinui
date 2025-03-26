@@ -167,15 +167,54 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     recipes.sort((a, b) => a.title.localeCompare(b.title, "he"));
 
-    recipes.forEach((recipe) => {
-      let item = document.createElement("li");
-      item.classList.add("list-group-item", "cursor-pointer");
-      item.textContent = recipe.title;
-      item.setAttribute("data-date", recipe.date);
-      item.onclick = () =>
-        (window.location.href = `recipe.html?id=${recipe.id}&category=${category}`);
-      listContainer.appendChild(item);
-    });
+    // אם מדובר בארוחת צהריים - מחלקים לפי תת קטגוריה
+    if (category === "lunch") {
+      // יצירת כותרות ואיזורים
+      const proteinTitle = document.createElement("h3");
+      proteinTitle.textContent = "חלבון";
+      proteinTitle.className = "category-title";
+
+      const proteinList = document.createElement("ul");
+      proteinList.className = "list-group";
+
+      const carbsTitle = document.createElement("h3");
+      carbsTitle.textContent = "פחמימה";
+      carbsTitle.className = "category-title";
+
+      const carbsList = document.createElement("ul");
+      carbsList.className = "list-group";
+
+      recipes.forEach((recipe) => {
+        const item = document.createElement("li");
+        item.classList.add("list-group-item", "cursor-pointer");
+        item.textContent = recipe.title;
+        item.setAttribute("data-date", recipe.date);
+        item.onclick = () =>
+          (window.location.href = `recipe.html?id=${recipe.id}&category=${category}`);
+
+        if (recipe.subcategory === "protein") {
+          proteinList.appendChild(item);
+        } else if (recipe.subcategory === "carbs") {
+          carbsList.appendChild(item);
+        }
+      });
+
+      listContainer.appendChild(proteinTitle);
+      listContainer.appendChild(proteinList);
+      listContainer.appendChild(carbsTitle);
+      listContainer.appendChild(carbsList);
+    } else {
+      // תצוגה רגילה
+      recipes.forEach((recipe) => {
+        const item = document.createElement("li");
+        item.classList.add("list-group-item", "cursor-pointer");
+        item.textContent = recipe.title;
+        item.setAttribute("data-date", recipe.date);
+        item.onclick = () =>
+          (window.location.href = `recipe.html?id=${recipe.id}&category=${category}`);
+        listContainer.appendChild(item);
+      });
+    }
   }
 
   function applyDateFilter() {
