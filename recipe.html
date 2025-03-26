@@ -1,458 +1,188 @@
-
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>מתכון</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet" />
-  <style>
-    body {
-            font-family: 'Heebo', sans-serif;
-            background: url('background.png') no-repeat center center fixed;
-            background-size: cover;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>פרטי מתכון</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css"
+      rel="stylesheet"
+    />
+    <script src="app.js" defer></script>
+    <style>
+      body {
+        font-family: "Heebo", sans-serif;
+        background: url("background.png") no-repeat center center fixed;
+        background-size: cover;
+        cursor: default;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      header {
+        background-color: #814eca;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        font-size: 26px;
+        font-weight: bold;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap; /* מאפשר ירידת שורה אם הכותרת ארוכה */
+      }
+
+      .back-link {
+        position: absolute;
+        left: 20px;
+        font-size: 24px;
+        text-decoration: none;
+        color: white;
+        font-weight: bold;
+      }
+
+      h1 {
+        flex: 1;
+        text-align: center;
+        font-size: 22px; /* כותרת קטנה יותר */
+        font-weight: bold;
+        padding: 0 40px; /* מונע מהכותרת להיצמד לחץ */
+        white-space: normal; /* מאפשר ירידת שורה בכותרות ארוכות */
+      }
+
+      .section-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #6a3ea0;
+        color: white;
+        border-radius: 5px;
+        text-align: center;
+      }
+
+      ul,
+      ol {
+        padding-right: 20px;
+      }
+
+      ul li {
+        list-style-type: "• ";
+        background: #f8f9fa;
+        margin-bottom: 6px; /* ריווח קטן יותר */
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 16px; /* טקסט קטן יותר */
+      }
+
+      ol li {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 16px; /* טקסט קטן יותר */
+        margin-bottom: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="recipes.html" class="back-link">⬅</a>
+      <h1 id="recipe-title">שם המתכון</h1>
+    </header>
+
+    <main class="container">
+      <p
+        id="recipe-description"
+        class="text-center mt-3"
+        style="display: none"
+      ></p>
+
+      <div class="ingredients">
+        <h3 class="section-title">🥦 רכיבים</h3>
+        <ul id="recipe-ingredients"></ul>
+      </div>
+
+      <div class="instructions">
+        <h3 class="section-title">👨‍🍳 אופן הכנה</h3>
+        <ol id="recipe-instructions"></ol>
+      </div>
+    </main>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", async function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const recipeId = urlParams.get("id");
+
+        if (!recipeId) {
+          document.body.innerHTML =
+            "<h2 style='text-align:center;'>שגיאה: לא נמצא מתכון</h2>";
+          return;
         }
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.6); /* ניתן לשנות את השקיפות */
-            z-index: -1;
+
+        const jsonFiles = [
+          "data/recipes_feb_2021_week_1.json",
+          "data/recipes_mar_2025_week_3.json",
+        ];
+
+        let allRecipes = [];
+
+        for (let file of jsonFiles) {
+          try {
+            console.log(`Loading file: ${file}`);
+            const response = await fetch(file);
+            if (!response.ok) throw new Error(`Error loading ${file}`);
+            const data = await response.json();
+            if (data.recipes) {
+              allRecipes = allRecipes.concat(data.recipes);
+            } else {
+              console.warn(`File ${file} is not in the expected format`, data);
+            }
+          } catch (error) {
+            console.error(`Error loading ${file}:`, error);
+          }
         }
-    header {
-      background: #814eca;
-      color: white;
-      padding: 20px;
-      font-size: 26px;
-      text-align: center;
-      position: relative;
-    }
-    .back-link {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 24px;
-      text-decoration: none;
-      color: white;
-    }
-    .container {
-      max-width: 800px;
-      margin: 40px auto;
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      text-align: right;
-    }
-    .note {
-      font-style: italic;
-      color: #6c757d;
-    }
-    h2 {
-      color: #814eca;
-    }
-    ul, ol {
-      direction: rtl;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <a href="javascript:history.back()" class="back-link">⬅</a>
-    <h1 id="recipe-title">מתכון</h1>
-  </header>
-  <main class="container">
-    <div id="recipe-date" class="note mb-2"></div>
-    <div id="serving-info" class="note mb-2"></div>
-    <div id="note" class="note mb-4"></div>
 
-    <h2>מצרכים</h2>
-    <ul id="ingredients" class="list-group list-unstyled mb-4"></ul> 
+        console.log("All loaded recipes:", allRecipes);
 
-    <h2>אופן הכנה</h2>
-    <ul id="instructions" class="list-group list-unstyled"></ul> 
-  </main>
-  
-  <script>
-    const recipes = {
-      "shake_alfajores": {
-  "title": "שייק אלפחורס",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "כף מייפל טבעי",
-    "בננה קטנה קפואה",
-    "כף שטוחה של שיבולת שועל",
-    "כף ממרח קרמלו/ חמאת קוקוס/ כף קוקוס טחון",
-    "יוגורט פרו/גו/גו סויה",
-    "כפית תמצית וניל/ תמצית ריבת חלב",
-    "חצי כוס מים",
-    "הרבה קרח"
-  ],
-  "instructions": [
-    "לטחון את כל המרכיבים יחד בבלנדר"
-  ]
-},
-"cheesecake_shake": {
-  "title": "שייק עוגת גבינה",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "2 כפות גבינה לבנה 5%",
-    "יוגורט פרו",
-    "כף דבש/מייפל טבעי",
-    "חצי כוס אוכמניות/ פירות יער קפואות",
-    "כף גרנולה ללא סוכר",
-    "המון המון קרח"
-  ],
-  "instructions": [
-    "לטחון את כל המרכיבים יחד בבלנדר"
-  ]
-},
-"tamar_peanut_butter": {
-  "title": "תמר בחמאת בוטנים",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "2 תמרים שלמים",
-    "חמאת בוטנים טבעית"
-  ],
-  "instructions": [
-    "מוציאות את הגלעין מכל תמר",
-    "ממלאות כל תמר שלם בחצי כפית חמאת בוטנים טבעית",
-    "מכניסות למקפיא למשך שעה לפחות"
-  ]
-},
-"petit_spelt": {
-  "title": "\"פתי-בר\" כוסמין",
-  "date": "מרץ 2025 שבוע 3",
-  "note": "[ניתן לשלב עם קוביית שוקולד מריר 85% קקאו]",
-  "ingredients": [
-    "1.5 כוסות קמח כוסמין מלא",
-    "1 כפית אבקת אפייה",
-    "3 כפות סוכר חום או מייפל",
-    "1 כפית תמצית וניל או קינמון טחון",
-    "60 מ" + "ל מים",
-    "1/3 כוס שמן קנולה"
-  ],
-  "instructions": [
-    "מחממות את התנור ל-180 מעלות",
-    "מעבד מזון: קמח, אבקת אפייה, סוכר - ערבוב קצר",
-    "מוסיפות שמן ותמצית וניל, שוב ערבוב",
-    "מוסיפות מים בהדרגה עד קבלת בצק אחיד",
-    "מרדדות, חותכות למלבנים, אופות 15-17 דקות"
-  ]
-},
-"corn_muffins": {
-  "title": "מאפינס תירס",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "280 גרם תירס קל",
-    "גביע יוגורט ביו טבעי",
-    "גביע ריקוטה 5% (200-250 גרם)",
-    "2 ביצים",
-    "4 כפות קוואקר דק/ קמח שיבולת שועל",
-    "100 גרם גבינה בולגרית",
-    "פלפל שחור"
-  ],
-  "instructions": [
-    "לערבב את כל המרכיבים יחד",
-    "לחמם תנור ל-180 מעלות",
-    "לחלק לתבנית מאפינס/ שקעים",
-    "לאפות כחצי שעה עד שמשחים"
-  ]
-},
-"vegan_corn_patties": {
-  "title": "לביבות תירס טבעוניות",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "1 כוס תירס מבושל",
-    "1/2 כוס קוואקר טחון",
-    "2 כפות קמח עדשים או קמח חומוס",
-    "חצי כפית כמון",
-    "מלח, פלפל",
-    "60 מ" + "ל מים"
-  ],
-  "instructions": [
-    "לערבב את כל החומרים יחד לקציצות רכות",
-    "לחמם מחבת עם שמן זית ולצלות משני הצדדים עד להשחמה"
-  ]
-},
-"cauliflower_puree": {
-  "title": "פירה כרובית",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "שקית של שבבי כרובית או מיני כרובית",
-    "1 בטטה גדולה או 1 תפוח אדמה",
-    "כוס חלב קוקוס עד 15%",
-    "1 כפית שמן זית",
-    "מלח",
-    "פלפל"
-  ],
-  "instructions": [
-    "לבשל את הכרובית ותפוח האדמה/בטטה עד לריכוך (כ-30 דקות)",
-    "לסנן את המים",
-    "לטחון בבלנדר תוך הוספת חלב הקוקוס עד למרקם חלק",
-    "לתבל בשמן זית, מלח ופלפל"
-  ]
-},
-"couscous_love": {
-  "title": "קוסקוס ושעועית צהובה",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "1/2 כוס קוסקוס מלא מוכן",
-    "1/2 כוס שעועית צהובה מבושלת",
-    "1 כפית שמן זית",
-    "מלח, כמון, כורכום"
-  ],
-  "instructions": [
-    "לחמם מחבת עם מעט שמן",
-    "להוסיף שעועית ותיבול, לטגן מעט",
-    "להוסיף את הקוסקוס, לערבב ולחמם יחד מספר דקות"
-  ]
-},
-"lentil_rice": {
-  "title": "תבשיל אורז, עדשים ופטריות",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "1/2 כוס עדשים ירוקות",
-    "1/2 כוס אורז מלא",
-    "פטריות קצוצות",
-    "בצל קצוץ",
-    "תיבול: כמון, מלח, פלפל, כורכום"
-  ],
-  "instructions": [
-    "לבשל עדשים במים כ-20 דק'",
-    "להוסיף אורז ולבשל יחד עוד 25 דק'",
-    "לטגן את הבצל והפטריות עם התיבול ולהוסיף לתערובת המבושלת"
-  ]
-},
-"chicken_fillets": {
-  "title": "פילה עוף / רצועות טופו / סייטן בירקות אסייתי",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "חזה עוף / טופו / סייטן חתוך לרצועות",
-    "ברוקולי, גזר, בצל, פלפל צבעוני",
-    "רוטב סויה דל נתרן, שמן שומשום, שום קצוץ",
-    "שומשום קלוי לקישוט"
-  ],
-  "instructions": [
-    "לטגן את החלבון שנבחר עם מעט שמן עד הזהבה",
-    "להוסיף את הירקות ולטגן יחד כמה דקות",
-    "להוסיף את הרוטב, לערבב היטב ולבשל 5 דקות נוספות"
-  ]
-},
-"balsamic_chicken_tofu": {
-  "title": "עוף / טופו ברוטב בלסמי סויה ורוזמרין",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "נתחי עוף / טופו",
-    "רוטב בלסמי וסויה",
-    "שום קצוץ, רוזמרין טרי",
-    "שמן זית"
-  ],
-  "instructions": [
-    "לטגן את השום והרוזמרין בשמן זית קלות",
-    "להוסיף את העוף/טופו ולצרוב היטב",
-    "להוסיף את הרוטב ולבשל עד שהרוטב מצטמצם ומצפה את החלבון"
-  ]
-},
-"crust_techina": {
-  "title": "קראסט טחינה לדג או טופו",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "נתחי דג/טופו",
-    "טחינה גולמית, לימון, עשבי תיבול קצוצים, שום כתוש",
-    "שומשום לקראסט",
-    "מלח ופלפל"
-  ],
-  "instructions": [
-    "לערבב את הטחינה עם הלימון, השום ועשבי התיבול",
-    "למרוח על הדג/טופו ולפזר שומשום מעל",
-    "לאפות ב-180 מעלות 15-20 דקות"
-  ]
-},
-"egg_nest": {
-  "title": "ביצה בקן עם עשבי תיבול",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "ביצה אחת",
-    "פרוסת לחם כוסמין",
-    "מעט שמן זית",
-    "עשבי תיבול קצוצים (פטרוזיליה/שמיר/בזיליקום)"
-  ],
-  "instructions": [
-    "לחתוך חור באמצע פרוסת הלחם",
-    "לחמם מחבת עם מעט שמן זית",
-    "להניח את הלחם ולטגן מעט משני הצדדים",
-    "לשבור את הביצה לתוך החור ולהוסיף עשבי תיבול מעל",
-    "לכסות ולטגן עד שהביצה מוכנה לפי הטעם"
-  ]
-},
-"tofu_nest": {
-  "title": "טופו בקן עם עשבי תיבול",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "פרוסת טופו עבה",
-    "חיתוך מרכזי להכנת קן",
-    "עשבי תיבול קצוצים",
-    "מלח, פלפל, מעט שמן זית"
-  ],
-  "instructions": [
-    "לטגן את הטופו עם שמן זית משני הצדדים",
-    "לשבור ביצה או למלא בעשבי תיבול בתוך הקן",
-    "להמשיך טיגון מכוסה עד שהתוכן מתייצב"
-  ]
-},
-"protein_frittata": {
-  "title": "פריטטת חלבונים והפתעות",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "2 ביצים",
-    "ירקות קצוצים (פלפל, בצל ירוק, קישוא) לפי בחירה",
-    "גבינה קשה מגורדת/גבינת פטה",
-    "מלח, פלפל, מעט שמן זית"
-  ],
-  "instructions": [
-    "לטגן קלות את הירקות במחבת",
-    "להוסיף ביצים טרופות עם תיבול",
-    "לפזר גבינה ולכסות עד שהביצים מתייצבות"
-  ]
-},
-"roasted_veggie_soup": {
-  "title": "מרק ירקות צלויים",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "גזר, בטטה, קישוא, בצל",
-    "שום, תיבול: מלח, פלפל, כמון",
-    "מעט שמן זית, מים לפי הצורך"
-  ],
-  "instructions": [
-    "לצלות את הירקות בתנור עם שמן זית עד ריכוך",
-    "להעביר לסיר עם מים",
-    "לטחון בבלנדר מוט למרקם חלק ולהוסיף תיבול לפי הטעם"
-  ]
-},
-"cheese_filo_pie": {
-  "title": "פשטידת פילו וגבינות",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "3 דפי פילו",
-    "200 גרם גבינת ריקוטה",
-    "100 גרם גבינה בולגרית/צהובה",
-    "2 ביצים",
-    "מעט שמן זית להברשה"
-  ],
-  "instructions": [
-    "לערבב את הגבינות והביצים",
-    "לשמן תבנית ולהניח דף פילו",
-    "למרוח מילוי ולחזור על הפעולה 3 פעמים",
-    "לאפות ב-180 מעלות כ-30 דקות עד השחמה"
-  ]
-},
-"vegan_filo_pie": {
-  "title": "פשטידת פילו טבעונית",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "3 דפי פילו",
-    "250 גרם טופו רך",
-    "2 כפות שמרי בירה",
-    "ירק קצוץ (פטרוזיליה, בצל ירוק)",
-    "מעט שמן זית להברשה"
-  ],
-  "instructions": [
-    "למעוך את הטופו ולערבב עם שאר החומרים",
-    "להניח דף פילו, למרוח מילוי, לחזור 3 פעמים",
-    "לאפות ב-180 מעלות כ-30 דקות"
-  ]
-},
-"bread_100cal_protein": {
-  "title": "לחם עד 100 קלוריות וחלבון",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "2 פרוסות לחם קל עד 50 קלוריות לפרוסה",
-    "2 כפות גבינה לבנה / קוטג' / גבינת סויה / טונה במים",
-    "ירקות חתוכים בצד (לא חובה)"
-  ],
-  "instructions": [
-    "למרוח גבינה/טונה על גבי הלחם",
-    "להגיש עם ירקות טריים בצד לפי הצורך"
-  ]
-},
-"bread_protein": {
-  "title": "לחם עד 100 קלוריות וחלבון",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "לחם קל (כוסמין / דגנים / חיטה / שיפון)",
-    "קרקרים / פריכיות / פיתה קלה",
-    "גבינה לבנה 5% / קוטג' / 2 ביצים קשות / טונה / חביתת חלבון",
-    "רשימת מנות שומן מותרות בסוף",
-    "2 ירקות טריים"
-  ],
-  "instructions": [
-    "לבחור את סוג הלחם הרצוי (כוסמין, דגנים, חיטה, שיפון וכו')",
-    "להוסיף את אחד ממקורות החלבון (גבינה לבנה, קוטג', ביצים, טונה או חביתה)",
-    "להגיש עם ירקות טריים בצד"
-  ]
-},
-"muesli_fruit": {
-  "title": "מוזלי",
-  "date": "מרץ 2025 שבוע 3",
-  "ingredients": [
-    "יוגורט טבעי מועשר בחלבון (20 גרם חלבון)",
-    "פרי אחד לבחירה",
-    "כפית חמאת בוטנים טבעית / כפית זרעי צ'יה",
-    "כפית סילאן / מייפל טבעי"
-  ],
-  "instructions": [
-    "לערבב את היוגורט עם חמאת הבוטנים או זרעי הצ'יה",
-    "להוסיף את הפרי ולערבב בעדינות",
-    "להמתיק עם סילאן או מייפל לפי הטעם"
-  ]
-}
-};
-    const params = new URLSearchParams(window.location.search);
-    const meal = params.get("meal");
-    const recipe = recipes[meal];
-    const servingSizes = {
-  "corn_muffins": "מנה: 2 יחידות (סה\"כ 14 יחידות)",
-  "protein_frittata": "מנה: כל הכמות",
-  "tamar_peanut_butter": "מנה: 2 יחידות",
-  "petit_spelt": "מנה: 2 יחידות",
-  "tofu_nest": "מנה: כל הכמות",
-  "egg_nest": "מנה: כל הכמות"
-};
+        const recipe = allRecipes.find((r) => r.id === recipeId);
 
-if (servingSizes[meal]) {
-  document.getElementById("serving-info").innerText = servingSizes[meal];
-}
-if (recipe) {
-    document.getElementById("recipe-title").innerText = recipe.title;
-    document.getElementById("recipe-date").innerText = recipe.date || "";
-    if (recipe.note) document.getElementById("note").innerText = recipe.note;
+        if (!recipe) {
+          document.body.innerHTML =
+            "<h2 style='text-align:center;'>שגיאה: מתכון לא נמצא</h2>";
+          return;
+        }
 
-    // מילוי רשימת המצרכים
-    const ingredientsList = document.getElementById("ingredients");
-    ingredientsList.innerHTML = ""; // מנקה תוכן קודם
-    recipe.ingredients.forEach(i => {
-        const li = document.createElement("li");
-        li.classList.add("list-group-item");
-        li.innerText = i;
-        ingredientsList.appendChild(li);
-    });
+        document.getElementById("recipe-title").innerText = recipe.title;
 
-    // מילוי רשימת השלבים
-    const instructionsList = document.getElementById("instructions");
-    instructionsList.innerHTML = ""; // מנקה תוכן קודם
-    recipe.instructions.forEach((step, index) => {
-        const li = document.createElement("li");
-        li.classList.add("list-group-item");
-        li.innerText = `${index + 1}. ${step}`; // מספור השלבים
-        instructionsList.appendChild(li);
-    });
-} else {
-    document.getElementById("recipe-title").innerText = "מתכון לא נמצא";
-}
+        if (recipe.description) {
+          const descElement = document.getElementById("recipe-description");
+          descElement.innerText = recipe.description;
+          descElement.style.display = "block";
+        }
 
+        const ingredientsList = document.getElementById("recipe-ingredients");
+        recipe.ingredients.forEach((ingredient) => {
+          const li = document.createElement("li");
+          li.innerText = ingredient;
+          ingredientsList.appendChild(li);
+        });
 
-  </script>
-</body>
+        const instructionsList = document.getElementById("recipe-instructions");
+        recipe.instructions.forEach((step, index) => {
+          const li = document.createElement("li");
+          li.innerText = step;
+          instructionsList.appendChild(li);
+        });
+      });
+    </script>
+  </body>
 </html>
