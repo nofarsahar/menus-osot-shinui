@@ -8,7 +8,6 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css"
       rel="stylesheet"
     />
-    <script src="app.js" defer></script>
     <style>
       body {
         font-family: "Heebo", sans-serif;
@@ -38,7 +37,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-wrap: wrap; /* מאפשר ירידת שורה אם הכותרת ארוכה */
+        flex-wrap: wrap;
       }
 
       .back-link {
@@ -53,10 +52,10 @@
       h1 {
         flex: 1;
         text-align: center;
-        font-size: 22px; /* כותרת קטנה יותר */
+        font-size: 22px;
         font-weight: bold;
-        padding: 0 40px; /* מונע מהכותרת להיצמד לחץ */
-        white-space: normal; /* מאפשר ירידת שורה בכותרות ארוכות */
+        padding: 0 40px;
+        white-space: normal;
       }
 
       .section-title {
@@ -75,21 +74,17 @@
         padding-right: 20px;
       }
 
-      ul li {
-        list-style-type: "• ";
-        background: #f8f9fa;
-        margin-bottom: 6px; /* ריווח קטן יותר */
-        padding: 10px;
-        border-radius: 5px;
-        font-size: 16px; /* טקסט קטן יותר */
-      }
-
+      ul li,
       ol li {
         background: #f8f9fa;
         padding: 10px;
         border-radius: 5px;
-        font-size: 16px; /* טקסט קטן יותר */
+        font-size: 16px;
         margin-bottom: 6px;
+      }
+
+      ul li {
+        list-style-type: "• ";
       }
     </style>
   </head>
@@ -105,7 +100,6 @@
         class="text-center mt-3"
         style="display: none"
       ></p>
-
       <p
         id="recipe-date"
         class="text-center mt-3"
@@ -127,6 +121,13 @@
       document.addEventListener("DOMContentLoaded", async function () {
         const urlParams = new URLSearchParams(window.location.search);
         const recipeId = urlParams.get("id");
+        const backCategory = urlParams.get("category");
+
+        if (backCategory) {
+          document.getElementById(
+            "back-link"
+          ).href = `recipes.html?category=${backCategory}`;
+        }
 
         if (!recipeId) {
           document.body.innerHTML =
@@ -144,21 +145,14 @@
 
         for (let file of jsonFiles) {
           try {
-            console.log(`Loading file: ${file}`);
             const response = await fetch(file);
             if (!response.ok) throw new Error(`Error loading ${file}`);
             const data = await response.json();
-            if (data.recipes) {
-              allRecipes = allRecipes.concat(data.recipes);
-            } else {
-              console.warn(`File ${file} is not in the expected format`, data);
-            }
+            if (data.recipes) allRecipes = allRecipes.concat(data.recipes);
           } catch (error) {
             console.error(`Error loading ${file}:`, error);
           }
         }
-
-        console.log("All loaded recipes:", allRecipes);
 
         const recipe = allRecipes.find((r) => r.id === recipeId);
 
@@ -168,232 +162,20 @@
           return;
         }
 
-        // הצגת שם המתכון
         document.getElementById("recipe-title").innerText = recipe.title;
+        document.getElementById("recipe-date").innerText = recipe.date;
 
-        // הצגת תאריך המתכון
-        const dateElement = document.getElementById("recipe-date");
-        dateElement.innerText = `${recipe.date}`;
-
-        // הצגת הרכיבים
         const ingredientsList = document.getElementById("recipe-ingredients");
-        ingredientsList.innerHTML = ""; // מניעת כפילות
+        ingredientsList.innerHTML = "";
         recipe.ingredients.forEach((ingredient) => {
           const li = document.createElement("li");
           li.innerText = ingredient;
           ingredientsList.appendChild(li);
         });
 
-        // הצגת אופן ההכנה
         const instructionsList = document.getElementById("recipe-instructions");
-        instructionsList.innerHTML = ""; // מניעת כפילות
+        instructionsList.innerHTML = "";
         recipe.instructions.forEach((step) => {
-          const li = document.createElement("li");
-          li.innerText = step;
-          instructionsList.appendChild(li);
-        });
-      });
-
-      document.addEventListener("DOMContentLoaded", async function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        const recipeId = urlParams.get("id");
-
-        if (!recipeId) {
-          document.body.innerHTML =
-            "<h2 style='text-align:center;'>שגיאה: לא נמצא מתכון</h2>";
-          return;
-        }
-
-        const jsonFiles = [
-          "data/recipes_feb_2021_week_1.json",
-          "data/recipes_mar_2025_week_3.json",
-          "data/recipes_mar_2025_week_4.json",
-        ];
-
-        let allRecipes = [];
-
-        for (let file of jsonFiles) {
-          try {
-            console.log(`Loading file: ${file}`);
-            const response = await fetch(file);
-            if (!response.ok) throw new Error(`Error loading ${file}`);
-            const data = await response.json();
-            if (data.recipes) {
-              allRecipes = allRecipes.concat(data.recipes);
-            } else {
-              console.warn(`File ${file} is not in the expected format`, data);
-            }
-          } catch (error) {
-            console.error(`Error loading ${file}:`, error);
-          }
-        }
-
-        console.log("All loaded recipes:", allRecipes);
-
-        const recipe = allRecipes.find((r) => r.id === recipeId);
-
-        if (!recipe) {
-          document.body.innerHTML =
-            "<h2 style='text-align:center;'>שגיאה: מתכון לא נמצא</h2>";
-          return;
-        }
-
-        // הצגת שם המתכון
-        document.getElementById("recipe-title").innerText = recipe.title;
-
-        // הצגת תאריך המתכון
-        const dateElement = document.getElementById("recipe-date");
-        dateElement.innerText = `${recipe.date}`;
-
-        // הצגת הרכיבים
-        const ingredientsList = document.getElementById("recipe-ingredients");
-        ingredientsList.innerHTML = ""; // מניעת כפילות
-        recipe.ingredients.forEach((ingredient) => {
-          const li = document.createElement("li");
-          li.innerText = ingredient;
-          ingredientsList.appendChild(li);
-        });
-
-        // הצגת אופן ההכנה
-        const instructionsList = document.getElementById("recipe-instructions");
-        instructionsList.innerHTML = ""; // מניעת כפילות
-        recipe.instructions.forEach((step) => {
-          const li = document.createElement("li");
-          li.innerText = step;
-          instructionsList.appendChild(li);
-        });
-      });
-
-      document.addEventListener("DOMContentLoaded", async function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        const recipeId = urlParams.get("id");
-
-        if (!recipeId) {
-          document.body.innerHTML =
-            "<h2 style='text-align:center;'>שגיאה: לא נמצא מתכון</h2>";
-          return;
-        }
-
-        const jsonFiles = [
-          "data/recipes_feb_2021_week_1.json",
-          "data/recipes_mar_2025_week_3.json",
-          "data/recipes_mar_2025_week_4.json",
-        ];
-
-        let allRecipes = [];
-
-        for (let file of jsonFiles) {
-          try {
-            console.log(`Loading file: ${file}`);
-            const response = await fetch(file);
-            if (!response.ok) throw new Error(`Error loading ${file}`);
-            const data = await response.json();
-            if (data.recipes) {
-              allRecipes = allRecipes.concat(data.recipes);
-            } else {
-              console.warn(`File ${file} is not in the expected format`, data);
-            }
-          } catch (error) {
-            console.error(`Error loading ${file}:`, error);
-          }
-        }
-
-        console.log("All loaded recipes:", allRecipes);
-
-        const recipe = allRecipes.find((r) => r.id === recipeId);
-
-        if (!recipe) {
-          document.body.innerHTML =
-            "<h2 style='text-align:center;'>שגיאה: מתכון לא נמצא</h2>";
-          return;
-        }
-
-        // הצגת שם המתכון
-        document.getElementById("recipe-title").innerText = recipe.title;
-
-        // הצגת תאריך המתכון
-        const dateElement = document.getElementById("recipe-date");
-        dateElement.innerText = `${recipe.date}`;
-
-        // הצגת הרכיבים
-        const ingredientsList = document.getElementById("recipe-ingredients");
-        recipe.ingredients.forEach((ingredient) => {
-          const li = document.createElement("li");
-          li.innerText = ingredient;
-          ingredientsList.appendChild(li);
-        });
-
-        // הצגת אופן ההכנה
-        const instructionsList = document.getElementById("recipe-instructions");
-        recipe.instructions.forEach((step, index) => {
-          const li = document.createElement("li");
-          li.innerText = step;
-          instructionsList.appendChild(li);
-        });
-      });
-
-      document.addEventListener("DOMContentLoaded", async function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        const recipeId = urlParams.get("id");
-
-        if (!recipeId) {
-          document.body.innerHTML =
-            "<h2 style='text-align:center;'>שגיאה: לא נמצא מתכון</h2>";
-          return;
-        }
-
-        const jsonFiles = [
-          "data/recipes_feb_2021_week_1.json",
-          "data/recipes_mar_2025_week_3.json",
-          "data/recipes_mar_2025_week_4.json",
-        ];
-
-        let allRecipes = [];
-
-        for (let file of jsonFiles) {
-          try {
-            console.log(`Loading file: ${file}`);
-            const response = await fetch(file);
-            if (!response.ok) throw new Error(`Error loading ${file}`);
-            const data = await response.json();
-            if (data.recipes) {
-              allRecipes = allRecipes.concat(data.recipes);
-            } else {
-              console.warn(`File ${file} is not in the expected format`, data);
-            }
-          } catch (error) {
-            console.error(`Error loading ${file}:`, error);
-          }
-        }
-
-        console.log("All loaded recipes:", allRecipes);
-
-        const recipe = allRecipes.find((r) => r.id === recipeId);
-
-        if (!recipe) {
-          document.body.innerHTML =
-            "<h2 style='text-align:center;'>שגיאה: מתכון לא נמצא</h2>";
-          return;
-        }
-
-        // הצגת שם המתכון
-        document.getElementById("recipe-title").innerText = recipe.title;
-
-        // הצגת תאריך המתכון
-        const dateElement = document.getElementById("recipe-date");
-        dateElement.innerText = `${recipe.date}`;
-
-        // הצגת הרכיבים
-        const ingredientsList = document.getElementById("recipe-ingredients");
-        recipe.ingredients.forEach((ingredient) => {
-          const li = document.createElement("li");
-          li.innerText = ingredient;
-          ingredientsList.appendChild(li);
-        });
-
-        // הצגת אופן ההכנה
-        const instructionsList = document.getElementById("recipe-instructions");
-        recipe.instructions.forEach((step, index) => {
           const li = document.createElement("li");
           li.innerText = step;
           instructionsList.appendChild(li);
