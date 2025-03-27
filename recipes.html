@@ -196,61 +196,27 @@
         const lunchSections = document.getElementById("lunch-sections");
         const generalSection = document.getElementById("general-section");
 
-        if (!category) {
-          listContainer.innerHTML =
-            "<li class='list-group-item text-center'>קטגוריה לא נבחרה</li>";
-          return;
-        }
-
-        // Update the page title based on category
         const categoryTitles = {
           breakfast: "ארוחת בוקר / ערב",
           lunch: "ארוחת צהריים",
           snacks: "ארוחת ביניים",
         };
         categoryTitle.innerText = categoryTitles[category] || "רשימת מתכונים";
-
         document.querySelector(
           ".back-link"
         ).href = `index.html?category=${category}`;
-        const jsonFiles = [
-          "data/recipes_feb_2021_week_1.json",
-          "data/recipes_mar_2025_week_3.json",
-          "data/recipes_mar_2025_week_4.json",
-        ];
 
-        const recipes = await fetchRecipes();
-        displayRecipes(
-          recipes.filter((r) => !category || r.category === category)
+        const allRecipes = await fetchRecipes();
+        const dedupedRecipes = deduplicateRecipes(allRecipes);
+
+        const filteredRecipes = dedupedRecipes.filter(
+          (r) => !category || r.category === category
         );
 
-        for (let file of jsonFiles) {
-          try {
-            const response = await fetch(file);
-            if (!response.ok) throw new Error(`Error loading file: ${file}`);
-            const data = await response.json();
-            allRecipes = allRecipes.concat(data.recipes);
-          } catch (error) {
-            console.error(`Error loading ${file}:`, error);
-          }
-        }
-
-        console.log("All recipes before filtering:", allRecipes);
-
-        const filteredRecipes = allRecipes.filter((recipe) => {
-          return (
-            recipe.category &&
-            recipe.category.toLowerCase() === category.toLowerCase()
-          );
-        });
-
-        // Sort alphabetically
-        filteredRecipes.sort((a, b) => a.title.localeCompare(b.title, "he"));
-
-        // Handle lunch category separately
         if (category === "lunch") {
-          lunchSections.style.display = "block"; // Show protein & carbs sections
-          generalSection.style.display = "none"; // Hide the general section
+          lunchSections.style.display = "block";
+          generalSection.style.display = "none";
+
           filteredRecipes.forEach((recipe) => {
             const li = document.createElement("li");
             li.className = "list-group-item cursor-pointer";
@@ -265,7 +231,6 @@
             }
           });
         } else {
-          // Regular categories (breakfast, snacks)
           filteredRecipes.forEach((recipe) => {
             const li = document.createElement("li");
             li.className = "list-group-item cursor-pointer";
@@ -274,26 +239,7 @@
               (window.location.href = `recipe.html?id=${recipe.id}`);
             listContainer.appendChild(li);
           });
-
-        document
-          .getElementById("filter-search")
-          .addEventListener("input", function () {
-            let filter = this.value.toLowerCase();
-            document
-              .querySelectorAll("#date-filters label")
-              .forEach((label) => {
-                label.style.display = label.innerText.includes(filter)
-                  ? ""
-                  : "none";
-              });
-          });
-
-        function closePopup() {
-          document.getElementById("popup-overlay").style.display = "none";
-          document.getElementById("popup-container").style.display = "none";
         }
-
-        window.closePopup = closePopup;
       });
 
       async function fetchRecipes() {
@@ -312,11 +258,31 @@
         return allRecipes;
       }
 
-      function displayRecipes(recipes) {
-        const list = document.getElementById("recipe-list");
-        list.innerHTML = recipes
-          .map((r) => `<li class="list-group-item">${r.title}</li>`)
-          .join("");
+      function normalizeTitle(title) {
+        return title
+          .trim()
+          .toLowerCase()
+          .replace(/[^\w\s]/g, "")
+          .replace(/\s+/g, " ");
+      }
+
+      function deduplicateRecipes(recipes) {
+        const seenIds = new Set();
+        const seenTitles = new Set();
+        const unique = [];
+
+        for (let recipe of recipes) {
+          const id = recipe.id;
+          const normTitle = normalizeTitle(recipe.title || "");
+
+          if (seenIds.has(id) || seenTitles.has(normTitle)) continue;
+
+          seenIds.add(id);
+          seenTitles.add(normTitle);
+          unique.push(recipe);
+        }
+
+        return unique;
       }
     </script>
   </body>
