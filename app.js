@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   const filterIcon = document.getElementById("filter-icon");
   const backLink = document.getElementById("back-link");
 
+
   // שליפת הקטגוריה מה-URL
   const urlParams = new URLSearchParams(window.location.search);
   const category = urlParams.get("category");
@@ -93,6 +94,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   popupContainer.appendChild(applyFilterButton);
 
   let allRecipes = [];
+
 
   async function loadRecipes() {
     const jsonFiles = [
