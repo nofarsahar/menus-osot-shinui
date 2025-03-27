@@ -3,7 +3,7 @@ function normalizeText(text) {
   return text
     .trim()
     .toLowerCase()
-    .replace(/[^\w\s]/g, "")
+    .replace(/[^֐-׿\w\s]/g, "")
     .replace(/\s+/g, " ");
 }
 
@@ -23,7 +23,6 @@ function generateRecipeFingerprint(recipe) {
     serving_size: normalizeText(recipe.serving_size || ""),
   };
 
-  // Return a string that can be used to compare recipes
   return `${norm.title}||${norm.ingredients}||${norm.instructions}||${norm.category}||${norm.subcategory}||${norm.serving_size}`;
 }
 
@@ -47,8 +46,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   const searchInput = document.getElementById("search");
   const filterIcon = document.getElementById("filter-icon");
   const backLink = document.getElementById("back-link");
-
-  // שליפת הקטגוריה מה-URL
   const urlParams = new URLSearchParams(window.location.search);
   const category = urlParams.get("category");
 
@@ -56,7 +53,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     backLink.href = `recipes.html?category=${category || ""}`;
   }
 
-  // יצירת רקע אפור מאחורי הפופ-אפ
   const popupOverlay = document.createElement("div");
   popupOverlay.id = "popup-overlay";
   popupOverlay.style.position = "fixed";
@@ -69,7 +65,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   popupOverlay.style.zIndex = "999";
   document.body.appendChild(popupOverlay);
 
-  // יצירת פופ-אפ
   const popupContainer = document.createElement("div");
   popupContainer.id = "popup-container";
   popupContainer.style.position = "fixed";
@@ -87,7 +82,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   popupContainer.style.zIndex = "1000";
   document.body.appendChild(popupContainer);
 
-  // יצירת כפתור X לסגירה
   const closeButton = document.createElement("span");
   closeButton.innerHTML = "&times;";
   closeButton.style.position = "absolute";
@@ -97,15 +91,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   closeButton.style.cursor = "pointer";
   closeButton.style.color = "#814eca";
   closeButton.style.fontWeight = "bold";
-
   closeButton.addEventListener("click", function () {
     popupContainer.style.display = "none";
     popupOverlay.style.display = "none";
   });
-
   popupContainer.appendChild(closeButton);
 
-  // יצירת שדה חיפוש תאריך
   const filterSearch = document.createElement("input");
   filterSearch.type = "text";
   filterSearch.id = "filter-search";
@@ -117,13 +108,11 @@ document.addEventListener("DOMContentLoaded", async function () {
   filterSearch.style.fontSize = "16px";
   popupContainer.appendChild(filterSearch);
 
-  // אזור לבחירת תאריכים
   const dateFiltersDiv = document.createElement("div");
   dateFiltersDiv.id = "date-filters";
   dateFiltersDiv.style.marginTop = "10px";
   popupContainer.appendChild(dateFiltersDiv);
 
-  // יצירת כפתור אישור סינון
   const applyFilterButton = document.createElement("button");
   applyFilterButton.innerText = "אישור";
   applyFilterButton.style.background = "#814eca";
@@ -156,7 +145,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       }
     }
 
-    // סינון לפי קטגוריה
+    allRecipes = deduplicateByContent(allRecipes);
+
     if (category) {
       allRecipes = allRecipes.filter(
         (recipe) =>
@@ -188,7 +178,6 @@ document.addEventListener("DOMContentLoaded", async function () {
       dateFiltersDiv.appendChild(label);
     });
 
-    // הוספת חיפוש תאריכים
     filterSearch.addEventListener("input", function () {
       let filterText = this.value.toLowerCase();
       let labels = dateFiltersDiv.querySelectorAll("label");
@@ -211,28 +200,36 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     recipes.sort((a, b) => a.title.localeCompare(b.title, "he"));
 
-    // אם מדובר בארוחת צהריים - מחלקים לפי תת קטגוריה
     if (category === "lunch") {
-      // יצירת כותרות ואיזורים
       const proteinTitle = document.createElement("h3");
       proteinTitle.textContent = "חלבון";
       proteinTitle.className = "category-title";
-
       const proteinList = document.createElement("ul");
       proteinList.className = "list-group";
 
       const carbsTitle = document.createElement("h3");
       carbsTitle.textContent = "פחמימה";
       carbsTitle.className = "category-title";
-
       const carbsList = document.createElement("ul");
       carbsList.className = "list-group";
 
       recipes.forEach((recipe) => {
         const item = document.createElement("li");
         item.classList.add("list-group-item", "cursor-pointer");
-        item.textContent = recipe.title;
-        item.setAttribute("data-date", recipe.date);
+
+        const title = document.createElement("div");
+        title.textContent = recipe.title;
+        title.style.fontWeight = "bold";
+        item.appendChild(title);
+
+        if (recipe.serving_size) {
+          const size = document.createElement("div");
+          size.textContent = recipe.serving_size;
+          size.style.fontSize = "0.85em";
+          size.style.color = "#555";
+          item.appendChild(size);
+        }
+
         item.onclick = () =>
           (window.location.href = `recipe.html?id=${recipe.id}&category=${category}`);
 
@@ -248,12 +245,23 @@ document.addEventListener("DOMContentLoaded", async function () {
       listContainer.appendChild(carbsTitle);
       listContainer.appendChild(carbsList);
     } else {
-      // תצוגה רגילה
       recipes.forEach((recipe) => {
         const item = document.createElement("li");
         item.classList.add("list-group-item", "cursor-pointer");
-        item.textContent = recipe.title;
-        item.setAttribute("data-date", recipe.date);
+
+        const title = document.createElement("div");
+        title.textContent = recipe.title;
+        title.style.fontWeight = "bold";
+        item.appendChild(title);
+
+        if (recipe.serving_size) {
+          const size = document.createElement("div");
+          size.textContent = recipe.serving_size;
+          size.style.fontSize = "0.85em";
+          size.style.color = "#555";
+          item.appendChild(size);
+        }
+
         item.onclick = () =>
           (window.location.href = `recipe.html?id=${recipe.id}&category=${category}`);
         listContainer.appendChild(item);
@@ -279,9 +287,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     popupOverlay.style.display = "none";
   }
 
-  applyFilterButton.addEventListener("click", function () {
-    applyDateFilter();
-  });
+  applyFilterButton.addEventListener("click", applyDateFilter);
 
   filterIcon.addEventListener("click", function () {
     popupContainer.style.display = "block";
