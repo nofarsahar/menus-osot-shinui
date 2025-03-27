@@ -1,9 +1,52 @@
+// Normalize a single string (lowercase, no punctuation, single spaces)
+function normalizeText(text) {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s]/g, "")
+    .replace(/\s+/g, " ");
+}
+
+// Normalize an array of strings into one comparable string
+function normalizeArray(arr) {
+  return arr.map(normalizeText).join("||");
+}
+
+// Create a unique fingerprint for each recipe (excluding date fields)
+function generateRecipeFingerprint(recipe) {
+  const norm = {
+    title: normalizeText(recipe.title || ""),
+    ingredients: normalizeArray(recipe.ingredients || []),
+    instructions: normalizeArray(recipe.instructions || []),
+    category: (recipe.category || "").toLowerCase(),
+    subcategory: (recipe.subcategory || "").toLowerCase(),
+    serving_size: normalizeText(recipe.serving_size || ""),
+  };
+
+  // Return a string that can be used to compare recipes
+  return `${norm.title}||${norm.ingredients}||${norm.instructions}||${norm.category}||${norm.subcategory}||${norm.serving_size}`;
+}
+
+// Remove duplicate recipes based on fingerprint
+function deduplicateByContent(recipes) {
+  const fingerprints = new Set();
+  const unique = [];
+
+  for (let recipe of recipes) {
+    const fingerprint = generateRecipeFingerprint(recipe);
+    if (fingerprints.has(fingerprint)) continue;
+    fingerprints.add(fingerprint);
+    unique.push(recipe);
+  }
+
+  return unique;
+}
+
 document.addEventListener("DOMContentLoaded", async function () {
   const listContainer = document.querySelector(".list-group");
   const searchInput = document.getElementById("search");
   const filterIcon = document.getElementById("filter-icon");
   const backLink = document.getElementById("back-link");
-
 
   // שליפת הקטגוריה מה-URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -94,7 +137,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   popupContainer.appendChild(applyFilterButton);
 
   let allRecipes = [];
-
 
   async function loadRecipes() {
     const jsonFiles = [
