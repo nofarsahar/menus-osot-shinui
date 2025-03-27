@@ -44,7 +44,7 @@
     {
       "id": "tuna_toast",
       "title": "טוסט טונה",
-      "category": "dinner",
+      "category": "breakfast",
       "ingredients": [
         "1 פחית טונה",
         "1 ביצה",
@@ -117,7 +117,7 @@
     {
       "id": "lentil_bulgur_soup",
       "title": "מרק עדשים ובורגול",
-      "category": "dinner",
+      "category": "breakfast",
       "ingredients": [
         "2 גבעולי סלרי, ניתן לשנות כמות לפי הטעם",
         "1 בצל קצוץ",
